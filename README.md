@@ -3,16 +3,20 @@
 # DESCRIPTION: GYM MANAGEMENT SYSTEM
 
 ## Entities and Relationships
-### Entities (Thực thể)
+
+### Entities
+
 1. **Member**: Represents the customers who have gym memberships.
 2. **Trainer**: Represents the fitness instructors or personal trainers.
 3. **GymStore**: Represents all gym’s supplement stores that collaborate with the Gym system.
 4. **GymBranch**: Represents all gym’s branches that collaborate with the Gym system.
 
-### Weak Entities (Thực thể yếu)
+### Weak Entities
+
 **Membership**: Represents the type of membership a member holds (e.g., monthly, quarterly, annually).
 
-### Relationships (Mối liên kết)
+### Relationships
+
 1. **HasMembership**: Between `Member` and `Membership`
    - A member holds a specific type of gym membership.
    - **Attributes**: `CurrentDate`
@@ -26,8 +30,10 @@
    - A trainer works at one or more gym branches.
    - **Attributes**: `TrainerID`, `GymBranchID`
 
-## Attributes (Thuộc tính)
+## Attributes
+
 ### Member
+
 - **MemberID**: Unique identifier for each member.
 - **DoB**: Date of Birth of a member.
 - **MemberName**: Full name of the member.
@@ -36,12 +42,14 @@
 - **Status**: Expired or Active
 
 ### Trainer
+
 - **TrainerID**: Unique identifier for each trainer.
 - **TrainerName**: Full name of the trainer.
 - **Specialization**: Area of expertise (e.g., weight training, cardio).
 - **TrainerPhoneNumber**: Contact information.
 
 ### Membership
+
 - **Type**: Type of membership (e.g., monthly, annual).
 - **Price**: The price of the membership.
 - **Duration**: Duration of the membership (e.g., 1 month, 12 months).
@@ -49,21 +57,27 @@
 - **EndDate**: Calculated as `StartDate + Duration`.
 
 ### GymStore
+
 - **GymStoreID**: Unique identifier for each gym’s supplement store.
 - **GymStoreName**: Name of the gym’s store.
 - **PurchaseDate**: Purchase date when a member makes a purchase in a gym store.
 - **DiscountAmount**: The percentage of discount for each store.
 
 ### GymBranch
+
 - **GymBranchID**: Unique identifier for each gym’s branch.
 - **Address**: Address of each branch.
 
-## Constraints (Ràng buộc)
+## Constraints
+
 ### Primary Key Constraints
+
 - **MemberID**, **TrainerID**, **MembershipID**, **GymStoreID**, **GymBranchID**
 
 ### Foreign Key Constraints
+
 - `Payment.MemberID` references `Member(MemberID)`
 
 ### Check Constraints
-- `Membership.Price` must be greater than zero. 
+
+- `Membership.Price` must be greater than zero.
