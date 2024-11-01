@@ -2,7 +2,7 @@ const express = require("express");
 const root = express.Router();
 
 root.get("/", (req, res) => {
-	res.json(`Hello👋, root/`);
+	res.json(`Root 3 thang gay`);
 });
 
 // Authentication
