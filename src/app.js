@@ -1,16 +1,18 @@
-// imports
 const express = require("express");
+const cors = require("cors");
+const logger = require("morgan");
 
-// DB connection Test
-const pg = require("../db/pg");
-// const sqlite3 = require("../db/sqlite3");
-
-app = express();
-
+const app = express();
+app.use(logger("dev")).use(express.json()).use(cors());
 // ROUTER
-app.use("/", require("./routes/root"));
-app.use("/api", require("./routes/api"));
-app.use("/api/users", require("./routes/users"));
+const authRoutes = require("./routes/authRoutes");
+// const userRoutes = require("./routes/userRoutes");
+// const membershipRoutes = require("./routes/membershipRoutes");
+// const gymRoutes = require("./routes/gymRoutes");
 
-// export app
-module.exports = app;
+app.use("/api/auth", authRoutes);
+// app.use("/api/user", userRoutes);
+// app.use("/api/memberships", membershipRoutes);
+// app.use("/api/gym", gymRoutes);
+
+module.exports = app; // Exporting the app instance
