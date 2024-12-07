@@ -31,9 +31,9 @@ const register = async (req, res) => {
 		// **Hash the password before storing it in the database**
 		const hashedPassword = await bcrypt.hash(Password, 10);
 
-		// **Insert the new user into the database, default role is 'member'**
+		// **Insert the new user into the database**
 		const insertUserQuery =
-			"INSERT INTO USERS (SSN, FName, LName, PhoneNum, Password, DoB, role) VALUES ($1, $2, $3, $4, $5, $6, 'member') RETURNING SSN, PhoneNum, role";
+			"INSERT INTO USERS (SSN, FName, LName, PhoneNum, Password, DoB) VALUES ($1, $2, $3, $4, $5, $6) RETURNING SSN, PhoneNum";
 		const result = await db.query(insertUserQuery, [
 			SSN,
 			FName,
@@ -43,9 +43,9 @@ const register = async (req, res) => {
 			DoB,
 		]);
 
-		// **Generate a JWT token for the newly registered user, including the role**
+		// **Generate a JWT token for the newly registered user**
 		const token = jwt.sign(
-			{ userId: result.rows[0].SSN, role: result.rows[0].role },
+			{ userId: result.rows[0].SSN },
 			process.env.JWT_SECRET,
 			{ expiresIn: "1h" }
 		);
@@ -101,16 +101,14 @@ const login = async (req, res) => {
 			return res.status(400).json({ msg: "Wrong password" });
 		}
 
-		// Generate JWT token after successful login, including role
-		const token = jwt.sign(
-			{ userId: user.SSN, role: user.role },
-			process.env.JWT_SECRET,
-			{ expiresIn: "1h" }
-		);
+		// Generate JWT token after successful login
+		const token = jwt.sign({ userId: user.SSN }, process.env.JWT_SECRET, {
+			expiresIn: "1h",
+		});
 
 		// Log success to the server
 		console.log(
-			`>> User logged in successfully.\nPhoneNum: ${PhoneNum} Role: ${user.role}`
+			`>> User logged in successfully.\nPhoneNum: ${PhoneNum} SSN: ${user.ssn}`
 		);
 
 		res.json({
@@ -123,30 +121,4 @@ const login = async (req, res) => {
 	}
 };
 
-// Middleware to verify role
-const verifyRole = (requiredRole) => {
-	return (req, res, next) => {
-		const token = req.header("x-auth-token");
-
-		if (!token) {
-			return res.status(401).json({ msg: "No token, authorization denied" });
-		}
-
-		try {
-			const decoded = jwt.verify(token, process.env.JWT_SECRET);
-			req.user = decoded;
-
-			// Check if the user's role matches the required role
-			if (req.user.role !== requiredRole && req.user.role !== "admin") {
-				return res.status(403).json({ msg: "Permission denied" });
-			}
-
-			next();
-		} catch (error) {
-			console.error("Token verification error:", error);
-			res.status(401).json({ msg: "Token is not valid" });
-		}
-	};
-};
-
-module.exports = { register, login, verifyRole };
+module.exports = { register, login };

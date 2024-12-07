@@ -3,10 +3,9 @@ const express = require("express");
 const router = express.Router();
 const userController = require("../controllers/UserController");
 
-// Route to make a user a trainer
-router.post("/become-trainer", userController.becomeTrainer);
-
-// Route to make a user a member
-router.post("/become-member", userController.becomeMember);
+router.get("/", userController.getAllUsers);
+router.get("/:userSSN", userController.getUserBySSN);
+router.put("/:userSSN", userController.updateUser);
+router.delete("/:userSSN", userController.deleteUser);
 
 module.exports = router;

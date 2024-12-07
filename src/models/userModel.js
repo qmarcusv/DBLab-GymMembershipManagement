@@ -1,12 +1,40 @@
-// userModel.js
-const db = require("../../db/pg"); // PostgreSQL database connection
+const { DataTypes } = require("sequelize");
+const db = require("../db/pg"); // Assuming this is your Sequelize instance
 
-// Update role of the user in the database
-const updateRole = async (SSN, newRole) => {
-	const updateRoleQuery =
-		"UPDATE USERS SET role = $1 WHERE SSN = $2 RETURNING SSN, role";
-	const result = await db.query(updateRoleQuery, [newRole, SSN]);
-	return result.rows[0];
-};
+const User = db.define(
+	"User",
+	{
+		SSN: {
+			type: DataTypes.CHAR(12),
+			primaryKey: true,
+			allowNull: false,
+		},
+		FName: {
+			type: DataTypes.STRING(50),
+			allowNull: false,
+		},
+		LName: {
+			type: DataTypes.STRING(50),
+			allowNull: false,
+		},
+		PhoneNum: {
+			type: DataTypes.STRING(12),
+			allowNull: false,
+			unique: true,
+		},
+		Password: {
+			type: DataTypes.STRING(255),
+			allowNull: false,
+		},
+		DoB: {
+			type: DataTypes.DATE,
+			allowNull: true,
+		},
+	},
+	{
+		tableName: "USERS",
+		timestamps: false, // Assuming the table does not have timestamps like createdAt/updatedAt
+	}
+);
 
-module.exports = { updateRole };
+module.exports = User;
