@@ -4,15 +4,11 @@ const logger = require("morgan");
 
 const app = express();
 app.use(logger("dev")).use(express.json()).use(cors());
+
 // ROUTER
-const authRoutes = require("./routes/authRoutes");
-// const userRoutes = require("./routes/userRoutes");
-// const membershipRoutes = require("./routes/membershipRoutes");
-// const gymRoutes = require("./routes/gymRoutes");
+const rootRouter = require("./routes/root");
 
-app.use("/api/auth", authRoutes);
+app.use("/api/", rootRouter);
 // app.use("/api/user", userRoutes);
-// app.use("/api/memberships", membershipRoutes);
-// app.use("/api/gym", gymRoutes);
 
-module.exports = app; // Exporting the app instance
+module.exports = app;

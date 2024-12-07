@@ -1,5 +1,19 @@
+-- Drop existing tables if they exist
+DROP TABLE IF EXISTS REGISTER;
+DROP TABLE IF EXISTS CLASS_SCHED;
+DROP TABLE IF EXISTS CLASS;
+DROP TABLE IF EXISTS GYMSTORE;
+DROP TABLE IF EXISTS BASIC;
+DROP TABLE IF EXISTS MEMBERSHIP;
+DROP TABLE IF EXISTS AREA;
+DROP TABLE IF EXISTS MEMBER;
+DROP TABLE IF EXISTS TRAINER;
+DROP TABLE IF EXISTS USERS;
+DROP TABLE IF EXISTS GYMBRANCH;
+
+-- Create tables as per your provided structure
 CREATE TABLE GYMBRANCH (
-    GymBranchID INT PRIMARY KEY,	-- INT for flexible branch numbering
+    GymBranchID INT PRIMARY KEY,  -- INT for flexible branch numbering
     Address VARCHAR(255) UNIQUE NOT NULL
 );
 
@@ -8,34 +22,44 @@ CREATE TABLE USERS (
     FName VARCHAR(50) NOT NULL,
     LName VARCHAR(50) NOT NULL,
     PhoneNum VARCHAR(12) UNIQUE NOT NULL,
-	Password VARCHAR(255) NOT NULL, -- encrypted
+    Password VARCHAR(255) NOT NULL,  -- encrypted
     DoB DATE
 );
--- Add the `role` column if it does not exist
-ALTER TABLE USERS
-ADD COLUMN IF NOT EXISTS role VARCHAR(20) DEFAULT 'member';
-
--- Make sure any existing records without a role have 'member' as default
-UPDATE USERS
-SET role = 'member'
-WHERE role IS NULL;
 
 CREATE TABLE TRAINER (
     TrainerID SERIAL PRIMARY KEY,
-    SSN CHAR(12) UNIQUE NOT NULL,	-- all TRAINERs must be in USERS
-    Specialization VARCHAR(50),
-	-- An trainer must either work as 'parttime' or 'fulltime' trainer
-    EmploymentType VARCHAR(20) NOT NULL CHECK(EmploymentType IN ('parttime','fulltime')),
-    Workplace INT NOT NULL,			-- every trainer must work at a specific GYMBRANCH
+    SSN CHAR(12),  -- all TRAINERs must be in USERS
+    Specialization VARCHAR(50) CHECK (Specialization IN ('Gym', 'Pilate', 'Calisthenic', 'Kickboxing', 'Boxing', 'Yoga', 'Meditate')) DEFAULT 'Gym',  -- Specialization of a trainer, default is 'Gym'
+    EmploymentType VARCHAR(20) NOT NULL CHECK(EmploymentType IN ('parttime','fulltime')) DEFAULT 'parttime',  -- An trainer must either work as 'parttime' or 'fulltime' trainer
+    Workplace INT NOT NULL DEFAULT 1,  -- every trainer must work at a specific GYMBRANCH
     FOREIGN KEY (SSN) REFERENCES USERS(SSN),
     FOREIGN KEY (Workplace) REFERENCES GYMBRANCH(GymBranchID)
 );
 
+-- Trigger Function to adjust TrainerID after deletion
+CREATE OR REPLACE FUNCTION adjust_trainer_ids()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Decrease the TrainerID for all trainers with ID greater than the deleted trainer
+  UPDATE trainer
+  SET TrainerID = TrainerID - 1
+  WHERE TrainerID > OLD.TrainerID;
+
+  RETURN OLD;  -- Return OLD to confirm the delete operation
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger to call the function after deletion
+CREATE TRIGGER after_trainer_delete
+AFTER DELETE ON trainer
+FOR EACH ROW
+EXECUTE FUNCTION adjust_trainer_ids();
+
 CREATE TABLE MEMBER (
     MemberID SERIAL PRIMARY KEY,
-    SSN CHAR(12) UNIQUE NOT NULL,	-- all MEMBERs must be in USERS
-    JoinDate DATE NOT NULL,
-    TrainerID SERIAL,				-- not every MEMBER associated with a TRAINER
+    SSN CHAR(12),  -- all MEMBERs must be in USERS
+    JoinDate DATE DEFAULT CURRENT_DATE,
+    TrainerID SERIAL,  -- not every MEMBER associated with a TRAINER
     FOREIGN KEY (SSN) REFERENCES USERS(SSN),
     FOREIGN KEY (TrainerID) REFERENCES TRAINER(TrainerID)
 );
@@ -55,9 +79,28 @@ CREATE TABLE MEMBERSHIP (
     Status VARCHAR(20) NOT NULL
 );
 
+-- Trigger Function to adjust TrainerID after deletion
+CREATE OR REPLACE FUNCTION adjust_program_ids()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Decrease the TrainerID for all trainers with ID greater than the deleted trainer
+  UPDATE program
+  SET ProgramID = ProgramID - 1
+  WHERE ProgramID > OLD.ProgramID;
+
+  RETURN OLD;  -- Return OLD to confirm the delete operation
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger to call the function after deletion
+CREATE TRIGGER after_program_delete
+AFTER DELETE ON program
+FOR EACH ROW
+EXECUTE FUNCTION adjust_program_ids();
+
 CREATE TABLE BASIC (
     ProgramID INT PRIMARY KEY,
-    Duration INTERVAL NOT NULL,
+    Duration INTERVAL NOT NULL DEFAULT '1 month',
     FOREIGN KEY (ProgramID) REFERENCES MEMBERSHIP(ProgramID)
 );
 
@@ -79,27 +122,69 @@ CREATE TABLE CLASS (
     TrainerID INT NOT NULL,
     PRIMARY KEY (ProgramID),
     FOREIGN KEY (ProgramID) REFERENCES MEMBERSHIP(ProgramID),
-    FOREIGN KEY (GymBranchID,Floor, Area) REFERENCES AREA(GymBranchID,Floor, Name),
+    FOREIGN KEY (GymBranchID, Floor, Area) REFERENCES AREA(GymBranchID, Floor, Name),
     FOREIGN KEY (TrainerID) REFERENCES TRAINER(TrainerID)
 );
 
-CREATE TABLE CLASS_SHED (
-	ProgramID INT,
-	DayOfWeek VARCHAR(10) CHECK (DayOfWeek IN ('Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun')),
-	TimeOfDay TIME,
-	SessionDuration INTERVAL
+CREATE TABLE CLASS_SCHED (
+    ProgramID INT,
+    DayOfWeek VARCHAR(10) CHECK (DayOfWeek IN ('Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun')),
+    TimeOfDay TIME,
+    SessionDuration INTERVAL
 );
 
 CREATE TABLE REGISTER (
-    MemberID INT,
+    SSN CHAR(12),
     ProgramID INT,
-    Number SERIAL UNIQUE NOT NULL, -- Auto increasing number represent invoice number
+    Number SERIAL UNIQUE NOT NULL,  -- Auto increasing number represents invoice number
     StartDate DATE NOT NULL,
     EndDate DATE NOT NULL,
-    PRIMARY KEY (MemberID, ProgramID),
-    FOREIGN KEY (MemberID) REFERENCES MEMBER(MemberID),
+    PRIMARY KEY (SSN, ProgramID),
+    FOREIGN KEY (SSN) REFERENCES USERS(SSN),
     FOREIGN KEY (ProgramID) REFERENCES MEMBERSHIP(ProgramID),
-    Method VARCHAR(50) CHECK (Method IN ('cash', 'ebanking', 'credit')),
-    Date DATE NOT NULL,
+    Method VARCHAR(50) CHECK (Method IN ('cash', 'ebanking', 'credit')) DEFAULT 'ebanking',
+    PurchaseDate DATE NOT NULL DEFAULT CURRENT_DATE,
     Amount INT NOT NULL
 );
+
+-- Insert data into GYMBRANCH
+INSERT INTO GYMBRANCH (GymBranchID, Address) VALUES
+(1, '600 Dien Bien Phu, HCMC'),
+(2, '280 Ly Thuong Kiet, HCMC'),
+(3, '123 Nguyen Van Linh, HCMC'),
+(4, '456 Le Van Luong, HCMC'),
+(5, '789 Nguyen Van Cu, HCMC');
+
+-- Insert data into AREA
+INSERT INTO AREA (GymBranchID, Floor, Name) VALUES
+(1, 1, 'Cardio Zone'),
+(1, 2, 'Weightlifting Area'),
+(2, 1, 'Yoga Studio');
+
+-- Insert data into MEMBERSHIP
+INSERT INTO MEMBERSHIP (ProgramID, ProgramName, Price, Status) VALUES
+(1, 'Basic Gym 1 month', 50.00, 'Active'),
+(2, 'Advanced Yoga', 70.00, 'Active'),
+(3, 'Premium Pilate', 90.00, 'Active'),
+(4, 'Kickboxing', 75.00, 'Active'),
+(5, 'Boxing', 60.00, 'Active'),
+(6, 'Meditation', 40.00, 'Active'),
+(7, 'Calisthenic', 95.00, 'Active');
+
+-- Insert data into BASIC
+INSERT INTO BASIC (ProgramID, Duration) VALUES
+(1, '1 month');
+
+-- Insert data into GYMSTORE
+INSERT INTO GYMSTORE (GymstoreID, Name, DiscountAmount, ProgramID) VALUES
+(1, 'Gym Wear Shop', 5.00, 1);
+
+-- Insert data into CLASS
+-- INSERT INTO CLASS (ProgramID, PeriodNum, SessionDuration, GymBranchID, Floor, Area, TrainerID) VALUES
+-- (1, 1, '1 hour', 1, 1, 'Cardio Zone', 1),
+-- (2, 1, '1.5 hours', 2, 1, 'Yoga Studio', 1);
+
+-- Insert data into CLASS_SCHED
+INSERT INTO CLASS_SCHED (ProgramID, DayOfWeek, TimeOfDay, SessionDuration) VALUES
+(1, 'Mon', '09:00:00', '1 hour'),
+(2, 'Wed', '18:00:00', '1.5 hours');
