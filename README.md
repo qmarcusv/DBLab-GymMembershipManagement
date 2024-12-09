@@ -39,5 +39,5 @@ A web-based application for managing gym memberships, trainer assignments, and c
 ```bash
    npm start  
 ```
-4. **Database configuration**
+## Database configuration
    Ensures that the front-end and back-end are properly configured to connect to the **PosgretSOL** database. Update the connection details in the configuration files (e.g., .env file for back-end services. )  
