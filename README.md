@@ -69,8 +69,6 @@
 - **Address**: Address of each branch.
 
 ## Constraints
-Kiet gió tai
-Quân gió nhải 
 ### Primary Key Constraints
 
 - **MemberID**, **TrainerID**, **MembershipID**, **GymStoreID**, **GymBranchID**
