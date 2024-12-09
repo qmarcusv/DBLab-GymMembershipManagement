@@ -55,14 +55,6 @@ AFTER DELETE ON trainer
 FOR EACH ROW
 EXECUTE FUNCTION adjust_trainer_ids();
 
-CREATE TABLE MEMBER (
-    MemberID SERIAL PRIMARY KEY,
-    SSN CHAR(12),  -- all MEMBERs must be in USERS
-    JoinDate DATE DEFAULT CURRENT_DATE,
-    TrainerID SERIAL,  -- not every MEMBER associated with a TRAINER
-    FOREIGN KEY (SSN) REFERENCES USERS(SSN),
-    FOREIGN KEY (TrainerID) REFERENCES TRAINER(TrainerID)
-);
 
 CREATE TABLE AREA (
     GymBranchID SERIAL,
@@ -71,32 +63,21 @@ CREATE TABLE AREA (
     PRIMARY KEY (GymBranchID, Floor, Name),
     FOREIGN KEY (GymBranchID) REFERENCES GYMBRANCH(GymBranchID)
 );
+CREATE TABLE MEMBER (
+    MemberID SERIAL PRIMARY KEY,
+    SSN CHAR(12),  -- all MEMBERs must be in USERS
+    JoinDate DATE DEFAULT CURRENT_DATE,
+    TrainerID INT,  -- not every MEMBER associated with a TRAINER
+    FOREIGN KEY (SSN) REFERENCES USERS(SSN),
+    FOREIGN KEY (TrainerID) REFERENCES TRAINER(TrainerID)
+);
 
 CREATE TABLE MEMBERSHIP (
     ProgramID SERIAL PRIMARY KEY,
     ProgramName VARCHAR(100) NOT NULL,
-    Price NUMERIC(10, 2) NOT NULL,
+    Price INT NOT NULL,
     Status VARCHAR(20) NOT NULL
 );
-
--- Trigger Function to adjust TrainerID after deletion
-CREATE OR REPLACE FUNCTION adjust_program_ids()
-RETURNS TRIGGER AS $$
-BEGIN
-  -- Decrease the TrainerID for all trainers with ID greater than the deleted trainer
-  UPDATE program
-  SET ProgramID = ProgramID - 1
-  WHERE ProgramID > OLD.ProgramID;
-
-  RETURN OLD;  -- Return OLD to confirm the delete operation
-END;
-$$ LANGUAGE plpgsql;
-
--- Trigger to call the function after deletion
-CREATE TRIGGER after_program_delete
-AFTER DELETE ON program
-FOR EACH ROW
-EXECUTE FUNCTION adjust_program_ids();
 
 CREATE TABLE BASIC (
     ProgramID INT PRIMARY KEY,
@@ -107,7 +88,7 @@ CREATE TABLE BASIC (
 CREATE TABLE GYMSTORE (
     GymstoreID SERIAL PRIMARY KEY,
     Name VARCHAR(100) NOT NULL,
-    DiscountAmount NUMERIC(5, 2) CHECK (DiscountAmount < 100),
+    DiscountAmount INT CHECK (DiscountAmount < 100),
     ProgramID INT,
     FOREIGN KEY (ProgramID) REFERENCES BASIC(ProgramID)
 );
@@ -154,7 +135,6 @@ INSERT INTO GYMBRANCH (GymBranchID, Address) VALUES
 (3, '123 Nguyen Van Linh, HCMC'),
 (4, '456 Le Van Luong, HCMC'),
 (5, '789 Nguyen Van Cu, HCMC');
-
 -- Insert data into AREA
 INSERT INTO AREA (GymBranchID, Floor, Name) VALUES
 (1, 1, 'Cardio Zone'),
@@ -163,13 +143,13 @@ INSERT INTO AREA (GymBranchID, Floor, Name) VALUES
 
 -- Insert data into MEMBERSHIP
 INSERT INTO MEMBERSHIP (ProgramID, ProgramName, Price, Status) VALUES
-(1, 'Basic Gym 1 month', 50.00, 'Active'),
-(2, 'Advanced Yoga', 70.00, 'Active'),
-(3, 'Premium Pilate', 90.00, 'Active'),
-(4, 'Kickboxing', 75.00, 'Active'),
-(5, 'Boxing', 60.00, 'Active'),
-(6, 'Meditation', 40.00, 'Active'),
-(7, 'Calisthenic', 95.00, 'Active');
+(1, 'Basic Gym 1 month', 50000, 'Active'),
+(2, 'Advanced Yoga', 70000, 'Active'),
+(3, 'Premium Pilate', 90000, 'Active'),
+(4, 'Kickboxing', 75000, 'Active'),
+(5, 'Boxing', 60000, 'Active'),
+(6, 'Meditation', 40000, 'Active'),
+(7, 'Calisthenic', 95000, 'Active');
 
 -- Insert data into BASIC
 INSERT INTO BASIC (ProgramID, Duration) VALUES
@@ -177,7 +157,7 @@ INSERT INTO BASIC (ProgramID, Duration) VALUES
 
 -- Insert data into GYMSTORE
 INSERT INTO GYMSTORE (GymstoreID, Name, DiscountAmount, ProgramID) VALUES
-(1, 'Gym Wear Shop', 5.00, 1);
+(1, 'Gym Wear Shop', 5, 1);
 
 -- Insert data into CLASS
 -- INSERT INTO CLASS (ProgramID, PeriodNum, SessionDuration, GymBranchID, Floor, Area, TrainerID) VALUES
