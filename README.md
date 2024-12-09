@@ -1,69 +1,43 @@
-# DBLab-GymManagementSystem
+# Gym Membership Management System
 
-# DESCRIPTION: GYM MANAGEMENT SYSTEM
+## Overview
 
-## Entities and Relationships
-### Entities (Thực thể)
-1. **Member**: Represents the customers who have gym memberships.
-2. **Trainer**: Represents the fitness instructors or personal trainers.
-3. **GymStore**: Represents all gym’s supplement stores that collaborate with the Gym system.
-4. **GymBranch**: Represents all gym’s branches that collaborate with the Gym system.
+A web-based application for managing gym memberships, trainer assignments, and class schedules. It allows gym members to register, view their classes, and interact with trainers. Trainers can manage their classes and track student progress, while admins can manage users and gym branches.
 
-### Weak Entities (Thực thể yếu)
-**Membership**: Represents the type of membership a member holds (e.g., monthly, quarterly, annually).
+## Features
 
-### Relationships (Mối liên kết)
-1. **HasMembership**: Between `Member` and `Membership`
-   - A member holds a specific type of gym membership.
-   - **Attributes**: `CurrentDate`
-2. **HasTrainer**: Between `Member` and `Trainer`
-   - A member is assigned to a trainer for personal training sessions.
-   - **Attributes**: `StartDate`, `EndDate`, `MemberID`, `TrainerID`
-3. **PurchaseFrom**: Between `Member` and `GymStore`
-   - A member can purchase products (e.g., supplements, gym equipment) from the gym store.
-   - **Attributes**: `PurchaseDate`, `GymStoreID`, `MemberID`
-4. **WorkAt**: Between `Trainer` and `GymBranch`
-   - A trainer works at one or more gym branches.
-   - **Attributes**: `TrainerID`, `GymBranchID`
+- **Membership Management**: Register and manage gym memberships.
+- **Trainer Management**: Assign trainers to members and manage their classes.
+- **Class Scheduling**: View and register for available gym classes.
+- **Gym Store**: Browse gym stores offering discounts to members.
+- **Admin Dashboard**: Manage gym branches, trainers, and members.
 
-## Attributes (Thuộc tính)
-### Member
-- **MemberID**: Unique identifier for each member.
-- **DoB**: Date of Birth of a member.
-- **MemberName**: Full name of the member.
-- **MemberPhoneNumber**: Contact information.
-- **JoinDate**: Date when the member joined the gym.
-- **Status**: Expired or Active
+## Technologies Used
 
-### Trainer
-- **TrainerID**: Unique identifier for each trainer.
-- **TrainerName**: Full name of the trainer.
-- **Specialization**: Area of expertise (e.g., weight training, cardio).
-- **TrainerPhoneNumber**: Contact information.
+- **Database**: PostgreSQL
+- **Back-End**: SQL (PL/pgSQL)
+- **Front-End**: React (optional, depending on your setup)
 
-### Membership
-- **Type**: Type of membership (e.g., monthly, annual).
-- **Price**: The price of the membership.
-- **Duration**: Duration of the membership (e.g., 1 month, 12 months).
-- **StartDate**: The start day of membership.
-- **EndDate**: Calculated as `StartDate + Duration`.
+## Installation
 
-### GymStore
-- **GymStoreID**: Unique identifier for each gym’s supplement store.
-- **GymStoreName**: Name of the gym’s store.
-- **PurchaseDate**: Purchase date when a member makes a purchase in a gym store.
-- **DiscountAmount**: The percentage of discount for each store.
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/your-username/gym-management-system.git
+   
+2. **Set Up the Database**:
+- Ensure **PostgreSQL is installed and running on your local machine.
+- Create a new database for the system.
 
-### GymBranch
-- **GymBranchID**: Unique identifier for each gym’s branch.
-- **Address**: Address of each branch.
 
-## Constraints (Ràng buộc)
-### Primary Key Constraints
-- **MemberID**, **TrainerID**, **MembershipID**, **GymStoreID**, **GymBranchID**
-
-### Foreign Key Constraints
-- `Payment.MemberID` references `Member(MemberID)`
-
-### Check Constraints
-- `Membership.Price` must be greater than zero. 
+3. **Back-End and Front-End setup**:
+- Install dependencies by running:
+```bash
+   npm install
+```
+- Set up environemnt variables for database connection (e.g., in .env file)
+- Start the back-end service:
+```bash
+   npm start  
+```
+4. **Database configuration**
+   Ensures that the front-end and back-end are properly configured to connect to the **PosgretSOL** database. Update the connection details in the configuration files (e.g., .env file for back-end services. )  
