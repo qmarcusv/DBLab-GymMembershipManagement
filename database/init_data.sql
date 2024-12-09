@@ -183,3 +183,12 @@ CALL register_member('123456789095', 5, 129, '2024-05-01', '2024-11-30', 'cash',
 CALL register_member('123456789096', 6, 130, '2024-06-01', '2024-12-31', 'credit', '2024-06-01', 1500);
 CALL register_member('123456789097', 7, 131, '2024-07-01', '2024-12-31', 'ebanking', '2024-07-01', 1100);
 CALL register_member('123456789098', 8, 132, '2024-08-01', '2024-12-31', 'cash', '2024-08-01', 1600);
+
+-- gymstore
+INSERT INTO GYMSTORE (Name, DiscountAmount, ProgramID) 
+VALUES 
+('Wellness Center', 22.10, 101),
+('Endurance Fitness', 12.90, 104),
+('Core Training', 17.20, 104),
+('Elite Gym', 5.00, 101),
+('Peak Performance', 35.50, 104);

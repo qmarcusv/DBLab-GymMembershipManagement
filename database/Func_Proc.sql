@@ -191,3 +191,20 @@ BEGIN
 	END IF;
 END;
 $$;
+
+CREATE OR REPLACE FUNCTION view_register(sr_ssn CHAR(12))
+RETURNS TABLE(
+	SSN CHAR(12),
+    ProgramID INT,
+    Number INT,
+    StartDate DATE,
+    EndDate DATE,
+    Method VARCHAR(50),
+    PurchaseDate DATE,
+    Amount INT
+) AS $$
+BEGIN
+	RETURN QUERY
+		SELECT * FROM register WHERE register.SSN = sr_ssn;
+END;
+$$ LANGUAGE plpgsql;
