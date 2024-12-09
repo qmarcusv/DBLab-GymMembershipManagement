@@ -15,8 +15,8 @@ A web-based application for managing gym memberships, trainer assignments, and c
 ## Technologies Used
 
 - **Database**: PostgreSQL
-- **Back-End**: SQL (PL/pgSQL)
-- **Front-End**: React (optional, depending on your setup)
+- **Back-End**:  ...
+- **Front-End**: React 
 
 ## Installation
 
