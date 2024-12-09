@@ -2,6 +2,15 @@
 CREATE ROLE db_admin;
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO db_admin;
 
--- application users
-CREATE ROLE app_user_read_only; -- members and trainers
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO app_user_read_only;
+-- manager
+CREATE ROLE manager;
+
+GRANT EXECUTE ON FUNCTION 
+	move_trainer_branch,
+	add_new_class,
+	add_new_trainer_to_branch,
+TO manager;
+
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO manager;
+
+-- user

@@ -59,6 +59,7 @@ BEGIN
 	IF NOT EXISTS ( SELECT 1 FROM register WHERE ssn = NEW.ssn ) THEN
 		RAISE EXCEPTION 'MEMBER must have associated REGISTER record!';
 	END IF;
+	RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 

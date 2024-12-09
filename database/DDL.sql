@@ -3,23 +3,21 @@ CREATE TABLE GYMBRANCH (
     Address VARCHAR(255) UNIQUE NOT NULL
 );
 
+
 CREATE TABLE USERS (
     SSN CHAR(12) PRIMARY KEY,
     FName VARCHAR(50) NOT NULL,
     LName VARCHAR(50) NOT NULL,	
     PhoneNum VARCHAR(12) UNIQUE NOT NULL,
 	Password VARCHAR(255) NOT NULL, -- encrypted
-    DoB DATE,
-	AccType VARCHAR(10) CHECK (AccType IN ('user', 'member', 'trainer'))
+    DoB DATE
 );
 
--- ALTER TABLE USERS ADD COLUMN acc_type VARCHAR(10) CHECK (acc_type IN ('user', 'member', 'trainer'));
--- ALTER TABLE USERS ALTER COLUMN acc_type SET DEFAULT 'user';
 
 CREATE TABLE TRAINER (
     TrainerID SERIAL PRIMARY KEY,
     SSN CHAR(12) UNIQUE NOT NULL,	-- all TRAINERs must be in USERS
-    Specialization VARCHAR(50),
+    Specialization VARCHAR(50) CHECK (Specialization IN ('Gym', 'Pilate', 'Calisthenic', 'Kickboxing', 'Boxing', 'Yoga', 'Meditate')) DEFAULT 'Gym',
 	-- An employee must either work as 'parttime' or 'fulltime' employee
     EmploymentType VARCHAR(20) NOT NULL CHECK(EmploymentType IN ('parttime','fulltime')), 
     Workplace INT NOT NULL,			-- every trainer must work at a specific GYMBRANCH
@@ -27,14 +25,16 @@ CREATE TABLE TRAINER (
     FOREIGN KEY (Workplace) REFERENCES GYMBRANCH(GymBranchID)
 );
 
+
 CREATE TABLE MEMBER (
     MemberID SERIAL PRIMARY KEY,
     SSN CHAR(12) UNIQUE NOT NULL,	-- all MEMBERs must be in USERS
-    JoinDate DATE NOT NULL,
+    JoinDate DATE,
     TrainerID SERIAL,				-- not every MEMBER associated with a TRAINER
     FOREIGN KEY (SSN) REFERENCES USERS(SSN),
     FOREIGN KEY (TrainerID) REFERENCES TRAINER(TrainerID)
 );
+
 
 CREATE TABLE AREA (
     GymBranchID SERIAL,
@@ -44,6 +44,7 @@ CREATE TABLE AREA (
     FOREIGN KEY (GymBranchID) REFERENCES GYMBRANCH(GymBranchID)
 );
 
+
 CREATE TABLE MEMBERSHIP (
     ProgramID SERIAL PRIMARY KEY,
     ProgramName VARCHAR(100) NOT NULL,
@@ -51,12 +52,13 @@ CREATE TABLE MEMBERSHIP (
     Status VARCHAR(20) NOT NULL
 );
 
+
 CREATE TABLE BASIC (
     ProgramID INT PRIMARY KEY,
     Duration INTERVAL NOT NULL,
     FOREIGN KEY (ProgramID) REFERENCES MEMBERSHIP(ProgramID)
 );
--- ALTER TABLE BASIC ADD COLUMN tier CHECK (tier in ('silver', 'gold', 'diamond'))
+
 
 CREATE TABLE GYMSTORE (
     GymstoreID SERIAL PRIMARY KEY,
@@ -87,6 +89,7 @@ CREATE TABLE CLASS_SCHED (
 	TimeOfDay TIME, 
 	SessionDuration INTERVAL
 );
+
 
 CREATE TABLE REGISTER (
     SSN CHAR(12),
