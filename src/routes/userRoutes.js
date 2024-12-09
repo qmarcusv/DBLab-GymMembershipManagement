@@ -1,11 +1,11 @@
 // userRoutes.js
 const express = require("express");
 const router = express.Router();
-const userController = require("../controllers/UserController");
+const userController = require("../controllers/userController");
 
 router.get("/", userController.getAllUsers);
-router.get("/:userSSN", userController.getUserBySSN);
-router.put("/:userSSN", userController.updateUser);
-router.delete("/:userSSN", userController.deleteUser);
+router.get("/:SSN", userController.getUserBySSN);
+router.put("/:SSN", userController.updateUser);
+router.delete("/:SSN", userController.deleteUser);
 
 module.exports = router;

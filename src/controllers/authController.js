@@ -1,37 +1,53 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const db = require("../../db/pg"); // PostgreSQL database connection
+
+// Colors for logging
+const RED = "\x1b[31m";
+const GREEN = "\x1b[32m";
+const YELLOW = "\x1b[33m";
+const RESET = "\x1b[0m";
+
 // Registration controller
 const register = async (req, res) => {
 	const { SSN, FName, LName, PhoneNum, Password, DoB } = req.body;
 
-	// Check if any required field is missing or null
+	// Validate required fields
 	if (!SSN || !FName || !LName || !PhoneNum || !Password || !DoB) {
+		console.log(
+			RED + "[ERROR] Missing required fields for registration." + RESET
+		);
 		return res.status(400).json({ msg: "All fields are required." });
 	}
 
 	// Validate input length
 	if (FName.length > 50 || LName.length > 50) {
+		console.log(RED + "[ERROR] First Name or Last Name too long." + RESET);
 		return res.status(400).json({
 			msg: "First Name and Last Name must be less than 50 characters.",
 		});
 	}
 	if (PhoneNum.length > 15) {
+		console.log(RED + "[ERROR] Phone number too long." + RESET);
 		return res
 			.status(400)
 			.json({ msg: "Phone number must be less than 15 characters." });
 	}
 	if (Password.length > 255) {
+		console.log(RED + "[ERROR] Password too long." + RESET);
 		return res
 			.status(400)
 			.json({ msg: "Password must be less than 255 characters." });
 	}
 
 	try {
-		// **Hash the password before storing it in the database**
+		console.log(YELLOW + "[INFO] Hashing password for secure storage." + RESET);
 		const hashedPassword = await bcrypt.hash(Password, 10);
 
-		// **Insert the new user into the database**
+		// Insert the new user into the database
+		console.log(
+			YELLOW + "[INFO] Registering new user in the database." + RESET
+		);
 		const insertUserQuery =
 			"INSERT INTO USERS (SSN, FName, LName, PhoneNum, Password, DoB) VALUES ($1, $2, $3, $4, $5, $6) RETURNING SSN, PhoneNum";
 		const result = await db.query(insertUserQuery, [
@@ -43,27 +59,28 @@ const register = async (req, res) => {
 			DoB,
 		]);
 
-		// **Generate a JWT token for the newly registered user**
+		// Generate JWT token
+		console.log(YELLOW + "[INFO] Generating JWT token for the user." + RESET);
 		const token = jwt.sign(
 			{ userId: result.rows[0].SSN },
 			process.env.JWT_SECRET,
 			{ expiresIn: "1h" }
 		);
-		// Log the SSN and Phone Number of the user after successful registration
-		console.log(
-			`>> User registered successfully. \nSSN: ${SSN} PhoneNum: ${PhoneNum}`
-		);
 
+		console.log(
+			GREEN +
+				`>> User registered successfully. SSN: ${SSN}, PhoneNum: ${PhoneNum}` +
+				RESET
+		);
 		res.json({
 			msg: "Registration successful!",
 			token: token,
 		});
 	} catch (error) {
-		console.error("Registration error", error);
+		console.error(RED + "[ERROR] Registration error: " + error.message + RESET);
 
-		// Check for unique constraint violations on SSN and PhoneNum
 		if (error.code === "23505") {
-			// 23505 is the error code for unique violation in PostgreSQL
+			console.log(RED + "[ERROR] SSN or Phone number already exists." + RESET);
 			return res
 				.status(400)
 				.json({ msg: "SSN or Phone number already exists" });
@@ -77,46 +94,62 @@ const register = async (req, res) => {
 const login = async (req, res) => {
 	const { PhoneNum, Password } = req.body;
 
-	// Check if any required field is missing or null
+	// Validate required fields
 	if (!PhoneNum || !Password) {
+		console.log(
+			RED + "[ERROR] Missing phone number or password for login." + RESET
+		);
 		return res
 			.status(400)
 			.json({ msg: "Phone number and Password are required." });
 	}
 
 	try {
-		// Check if user exists by PhoneNum
+		// Check if user exists
+		console.log(
+			YELLOW +
+				`[INFO] Checking user existence for PhoneNum: ${PhoneNum}.` +
+				RESET
+		);
 		const checkUserQuery = "SELECT * FROM USERS WHERE PhoneNum = $1";
 		const result = await db.query(checkUserQuery, [PhoneNum]);
 
 		if (result.rows.length === 0) {
+			console.log(
+				RED + "[ERROR] User not found for PhoneNum: " + PhoneNum + RESET
+			);
 			return res.status(400).json({ msg: "User not found" });
 		}
 
 		const user = result.rows[0];
 
-		// Compare the provided password with the stored hashed password
+		// Compare passwords
+		console.log(YELLOW + "[INFO] Verifying user password." + RESET);
 		const isMatch = await bcrypt.compare(Password, user.password);
 		if (!isMatch) {
+			console.log(
+				RED + "[ERROR] Incorrect password for PhoneNum: " + PhoneNum + RESET
+			);
 			return res.status(400).json({ msg: "Wrong password" });
 		}
 
-		// Generate JWT token after successful login
-		const token = jwt.sign({ userId: user.SSN }, process.env.JWT_SECRET, {
+		// Generate JWT token
+		console.log(YELLOW + "[INFO] Generating JWT token for login." + RESET);
+		const token = jwt.sign({ userId: user.ssn }, process.env.JWT_SECRET, {
 			expiresIn: "1h",
 		});
 
-		// Log success to the server
 		console.log(
-			`>> User logged in successfully.\nPhoneNum: ${PhoneNum} SSN: ${user.ssn}`
+			GREEN +
+				`>> User logged in successfully. PhoneNum: ${PhoneNum}, SSN: ${user.ssn}` +
+				RESET
 		);
-
 		res.json({
 			msg: "Login successful!",
 			token: token,
 		});
 	} catch (error) {
-		console.error("Login error:", error);
+		console.error(RED + "[ERROR] Login error: " + error.message + RESET);
 		res.status(500).send("Server error");
 	}
 };

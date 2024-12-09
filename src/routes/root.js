@@ -9,10 +9,13 @@ const gymStoreRoute = require("./gymStoreRoutes");
 const classRoute = require("./classRoutes");
 const classSchedRoute = require("./classSchedRoutes");
 const registerRoutes = require("./registerRoutes");
+const userRoutes = require("./userRoutes");
 const router = express.Router();
 
+// Import the routes
 router.use("/auth", authRoute);
 router.use("/gymbranches", gymBranchRoute);
+router.use("/users", userRoutes);
 router.use("/trainers", trainerRoute);
 router.use("/members", memberRoute);
 router.use("/memberships", membershipRoute);
