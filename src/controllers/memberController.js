@@ -152,29 +152,25 @@ const getMemberByID = async (req, res) => {
 // Update member information
 const updateMember = async (req, res) => {
 	const { memberID } = req.params;
-	const { ProgramID, Method } = req.body;
+	const { TrainerID } = req.body; // Only TrainerID now
 
 	console.log(YELLOW + `[INFO] Updating member with ID: ${memberID}` + RESET);
 
-	if (!ProgramID || !Method) {
-		console.log(
-			RED + "[ERROR] Missing ProgramID or Method in update request." + RESET
-		);
-		return res.status(400).json({ msg: "ProgramID and Method are required." });
-	}
-
-	const validMethods = ["cash", "ebanking", "credit"];
-	if (!validMethods.includes(Method)) {
-		console.log(
-			RED + "[ERROR] Invalid payment method provided in update request." + RESET
-		);
-		return res.status(400).json({ msg: "Invalid payment method." });
+	// Validate that TrainerID is provided
+	if (!TrainerID) {
+		console.log(RED + "[ERROR] Missing TrainerID in update request." + RESET);
+		return res.status(400).json({ msg: "TrainerID is required." });
 	}
 
 	try {
+		// Construct the update query based on TrainerID provided
 		const updateMemberQuery = `
-      UPDATE MEMBER SET ProgramID = $1 WHERE MemberID = $2 RETURNING MemberID`;
-		const result = await db.query(updateMemberQuery, [ProgramID, memberID]);
+      UPDATE MEMBER SET TrainerID = $1 WHERE MemberID = $2 RETURNING MemberID
+    `;
+		const values = [TrainerID, memberID];
+
+		// Execute the update query
+		const result = await db.query(updateMemberQuery, values);
 
 		if (result.rows.length === 0) {
 			console.log(

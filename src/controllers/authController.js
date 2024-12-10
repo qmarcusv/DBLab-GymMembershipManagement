@@ -11,39 +11,19 @@ const RESET = "\x1b[0m";
 // Registration controller
 const register = async (req, res) => {
 	const { SSN, FName, LName, PhoneNum, Password, DoB } = req.body;
-
+	console.log(req.body);
 	// Validate required fields
-	if (!SSN || !FName || !LName || !PhoneNum || !Password || !DoB) {
+
+	if (!SSN || !FName || !LName || !PhoneNum || !Password) {
 		console.log(
 			RED + "[ERROR] Missing required fields for registration." + RESET
 		);
 		return res.status(400).json({ msg: "All fields are required." });
 	}
 
-	// Validate input length
-	if (FName.length > 50 || LName.length > 50) {
-		console.log(RED + "[ERROR] First Name or Last Name too long." + RESET);
-		return res.status(400).json({
-			msg: "First Name and Last Name must be less than 50 characters.",
-		});
-	}
-	if (PhoneNum.length > 15) {
-		console.log(RED + "[ERROR] Phone number too long." + RESET);
-		return res
-			.status(400)
-			.json({ msg: "Phone number must be less than 15 characters." });
-	}
-	if (Password.length > 255) {
-		console.log(RED + "[ERROR] Password too long." + RESET);
-		return res
-			.status(400)
-			.json({ msg: "Password must be less than 255 characters." });
-	}
-
 	try {
 		console.log(YELLOW + "[INFO] Hashing password for secure storage." + RESET);
 		const hashedPassword = await bcrypt.hash(Password, 10);
-
 		// Insert the new user into the database
 		console.log(
 			YELLOW + "[INFO] Registering new user in the database." + RESET
@@ -58,7 +38,6 @@ const register = async (req, res) => {
 			hashedPassword,
 			DoB,
 		]);
-
 		// Generate JWT token
 		console.log(YELLOW + "[INFO] Generating JWT token for the user." + RESET);
 		const token = jwt.sign(
@@ -93,7 +72,7 @@ const register = async (req, res) => {
 // Login controller
 const login = async (req, res) => {
 	const { PhoneNum, Password } = req.body;
-
+	console.log(req.body);
 	// Validate required fields
 	if (!PhoneNum || !Password) {
 		console.log(
