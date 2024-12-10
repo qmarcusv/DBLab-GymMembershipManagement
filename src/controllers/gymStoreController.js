@@ -45,15 +45,29 @@ const getGymStoreById = async (req, res) => {
 		res.status(500).json({ error: err.message });
 	}
 };
-
 // Create a new gym store
 const createGymStore = async (req, res) => {
 	try {
-		const { Name, DiscountAmount, ProgramID } = req.body;
+		const { GymstoreID, Name, DiscountAmount, ProgramID } = req.body;
+
+		// Check if the ProgramID exists in the BASIC table
+		const programCheckQuery = "SELECT * FROM BASIC WHERE ProgramID = $1";
+		const programCheckResult = await pool.query(programCheckQuery, [ProgramID]);
+
+		if (programCheckResult.rows.length === 0) {
+			console.log(
+				RED + `[ERROR] ProgramID ${ProgramID} not found in BASIC table.` + RESET
+			);
+			return res
+				.status(400)
+				.json({ error: "Invalid ProgramID. Program does not exist." });
+		}
+
+		// Proceed to insert gym store
 		console.log(YELLOW + "[INFO] Creating new gym store." + RESET);
 		const result = await pool.query(
-			"INSERT INTO GYMSTORE (Name, DiscountAmount, ProgramID) VALUES ($1, $2, $3) RETURNING *",
-			[Name, DiscountAmount, ProgramID]
+			"INSERT INTO GYMSTORE (GymstoreID, Name, DiscountAmount, ProgramID) VALUES ($1, $2, $3, $4) RETURNING *",
+			[GymstoreID, Name, DiscountAmount, ProgramID]
 		);
 		console.log(
 			GREEN +
@@ -76,6 +90,20 @@ const updateGymStore = async (req, res) => {
 		const { id } = req.params;
 		const { Name, DiscountAmount, ProgramID } = req.body;
 
+		// Check if the ProgramID exists in the BASIC table
+		const programCheckQuery = "SELECT * FROM BASIC WHERE ProgramID = $1";
+		const programCheckResult = await pool.query(programCheckQuery, [ProgramID]);
+
+		if (programCheckResult.rows.length === 0) {
+			console.log(
+				RED + `[ERROR] ProgramID ${ProgramID} not found in BASIC table.` + RESET
+			);
+			return res
+				.status(400)
+				.json({ error: "Invalid ProgramID. Program does not exist." });
+		}
+
+		// Proceed to update gym store
 		console.log(YELLOW + `[INFO] Updating gym store with ID: ${id}` + RESET);
 		const result = await pool.query(
 			"UPDATE GYMSTORE SET Name = $1, DiscountAmount = $2, ProgramID = $3 WHERE GymstoreID = $4 RETURNING *",

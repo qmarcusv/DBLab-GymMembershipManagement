@@ -104,13 +104,13 @@ const login = async (req, res) => {
 
 		// Compare passwords
 		console.log(YELLOW + "[INFO] Verifying user password." + RESET);
-		// const isMatch = await bcrypt.compare(Password, user.password);
-		// if (!isMatch) {
-		// 	console.log(
-		// 		RED + "[ERROR] Incorrect password for PhoneNum: " + PhoneNum + RESET
-		// 	);
-		// 	return res.status(400).json({ msg: "Wrong password" });
-		// }
+		const isMatch = await bcrypt.compare(Password, user.password);
+		if (!isMatch) {
+			console.log(
+				RED + "[ERROR] Incorrect password for PhoneNum: " + PhoneNum + RESET
+			);
+			return res.status(400).json({ msg: "Wrong password" });
+		}
 
 		// Generate JWT token
 		console.log(YELLOW + "[INFO] Generating JWT token for login." + RESET);
